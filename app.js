@@ -239,11 +239,13 @@ function renderHome() {
     ])
   ]);
   content.append(welcome);
+  const compactGrid = el("div", { className: "home-info-grid" });
+  content.append(compactGrid);
   const section = (id, title, description, linkText, href) => {
     const card = el("article", { className: "text-card home-section" }); card.id=id;
     card.append(el("h2", {text:title}),el("p", {text:description}));
     if (linkText) card.append(el("a", {className:"button",href,text:linkText}));
-    content.append(card);
+    compactGrid.append(card);
   };
   section("about","👤 Hakkımda","Merhaba, ben Çağrı. Godot ile bağımsız PC oyunları ve interaktif deneyimler geliştiriyorum. Aynı zamanda elektrik-elektronik mühendisliği öğrencisiyim.");
   section("donate","💜 Destek Ol","Yeni oyun sistemleri ve projeler geliştirmeme destek olabilirsin.","☕ Buy Me a Coffee","https://buymeacoffee.com/KloverY");
