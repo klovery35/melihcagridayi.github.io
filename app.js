@@ -219,7 +219,7 @@ function renderContact() {
   const card = el("article", { className: "text-card" });
   card.append(el("p", { text: "E-posta: melihcagridayi@gmail.com" }));
   card.append(el("div", { className: "link-stack" }, [
-    externalButton("✉️ E-posta Gönder", "mailto:melihcagridayi@gmail.com"),
+    externalButton("✉️ E-posta Gönder", "https://mail.google.com/mail/?view=cm&fs=1&to=melihcagridayi%40gmail.com"),
     externalButton("🎮 itch.io Profilim", "https://melihcagridayi.itch.io"),
     externalButton("💻 GitHub Profilim", "https://github.com/klovery35")
   ]));
@@ -249,8 +249,8 @@ function renderHome() {
   };
   section("about","👤 Hakkımda","Merhaba, ben Çağrı. Godot ile bağımsız PC oyunları ve interaktif deneyimler geliştiriyorum. Aynı zamanda elektrik-elektronik mühendisliği öğrencisiyim.");
   section("donate","💜 Destek Ol","Yeni oyun sistemleri ve projeler geliştirmeme destek olabilirsin.","☕ Buy Me a Coffee","https://buymeacoffee.com/KloverY");
-  section("contact","📩 İletişim","Proje ve iş birliği için benimle iletişime geçebilirsin.","✉️ E-posta Gönder","mailto:melihcagridayi@gmail.com");
-  section("devlog","📝 Devlog","Geliştirme günlüğüm ve son güncellemelerim.","Devlog’u Aç","devlog.html");
+  section("contact","📩 İletişim","Proje ve iş birliği için benimle iletişime geçebilirsin.","✉️ E-posta Gönder","https://mail.google.com/mail/?view=cm&fs=1&to=melihcagridayi%40gmail.com");
+  section("devlog","📝 Devlog","Geliştirme günlüğüm, sürüm notları ve oyunlarımdaki son yenilikler.","📝 Devlog’u Aç","devlog.html");
 
 }
 function renderSchool() {

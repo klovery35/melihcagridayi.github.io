@@ -344,3 +344,10 @@ body:has(.home-info-grid) .home-hero .button { min-height:39px; padding:9px 14px
 body:has(.home-info-grid) .site-footer { padding-top:8px; padding-bottom:10px; }
 @media(max-width:680px) { .home-info-grid { grid-template-columns:1fr; } .home-info-grid .home-section { padding:17px; } }
 @media(min-width:901px) and (max-height:760px) { body:has(.home-info-grid) .home-hero {padding:14px 20px;} .home-info-grid .home-section {padding:12px 16px;} body:has(.home-info-grid) .page-heading {margin-bottom:10px;} }
+
+/* Ana sayfa kartları: eşit yükseklik, Devlog da tam boy */
+.home-info-grid { align-items:stretch; grid-auto-rows:minmax(144px,auto); }
+.home-info-grid .home-section { height:100%; display:flex; flex-direction:column; justify-content:flex-start; }
+.home-info-grid .home-section .button { align-self:flex-start; margin-top:auto; }
+.home-info-grid .home-section p { margin-bottom:12px; }
+@media (max-width:680px) { .home-info-grid { grid-auto-rows:auto; } .home-info-grid .home-section { min-height:135px; } }
