@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12091f">
+  <meta name="description" content="Klovery Games — Melih Çağrı Dayı'nın bağımsız oyun projeleri, geliştirme günlükleri ve iletişim bilgileri.">
+  <meta property="og:title" content="Klovery Games | Melih Çağrı Dayı">
+  <meta property="og:description" content="Bağımsız oyun projeleri, devlog ve geliştirici portföyü.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/klovery_icon.png">
+  <link rel="preconnect" href="https://raw.githubusercontent.com">
+  <title>Devlog | Klovery Games</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="firebase-config.js" defer></script>
+  <script type="module" src="reactions.js"></script>
+  <script src="school-projects.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Ana menü">
+      <a class="brand" href="index.html" aria-label="Klovery Games ana sayfa">
+        <img src="assets/klovery_icon.png" alt="" class="brand-icon">
+        <span>
+          <strong>Klovery Games</strong>
+          <small>Melih Çağrı Dayı</small>
+        </span>
+      </a>
+
+      <nav class="desktop-nav nav-list" aria-label="Site bölümleri">
+        <a href="index.html" data-page="home"><span>🏠</span> Ana Sayfa</a>
+        <a href="oyunlar.html" data-page="games"><span>🎮</span> Oyunlar</a>
+        <a href="projeler.html" data-page="school"><span>📁</span> Projeler</a>
+        <a href="devlog.html" data-page="devlog"><span>📝</span> Devlog</a>
+        <a href="devlog.html" data-page="devlog"><span>📝</span> Devlog</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span>Web Edition</span>
+        <small>Original app made with Godot</small>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="mobile-header">
+        <a class="mobile-brand" href="index.html">
+          <img src="assets/klovery_icon.png" alt="">
+          <span>Klovery Games</span>
+        </a>
+        <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Menüyü aç" aria-expanded="false">☰</button>
+      </header>
+
+      <nav id="mobile-nav" class="mobile-nav nav-list" aria-label="Mobil site bölümleri">
+        <a href="index.html" data-page="home"><span>🏠</span> Ana Sayfa</a>
+        <a href="oyunlar.html" data-page="games"><span>🎮</span> Oyunlar</a>
+        <a href="projeler.html" data-page="school"><span>📁</span> Projeler</a>
+        <a href="devlog.html" data-page="devlog"><span>📝</span> Devlog</a>
+        <a href="devlog.html" data-page="devlog"><span>📝</span> Devlog</a>
+      </nav>
+
+      <section class="content-wrap" aria-live="polite">
+        <div class="page-heading">
+          <p class="eyebrow">KLOVERY GAMES</p>
+          <h1 id="page-title">Klovery Games</h1>
+          <p id="page-subtitle" class="page-subtitle">Bağımsız oyunlar ve geliştirme notları.</p>
+        </div>
+        <div id="content" class="content-panel"></div>
+      </section>
+
+      <footer class="site-footer">
+        <span>© <span id="year"></span> Klovery Games</span>
+        <a href="https://github.com/klovery35" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </footer>
+    </main>
+  </div>
+
+  <noscript>
+    <div class="noscript">Bu siteyi görüntülemek için JavaScript'i etkinleştirmen gerekiyor.</div>
+  </noscript>
+</body>
+</html>

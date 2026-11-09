@@ -248,13 +248,8 @@ function renderHome() {
   section("about","👤 Hakkımda","Merhaba, ben Çağrı. Godot ile bağımsız PC oyunları ve interaktif deneyimler geliştiriyorum. Aynı zamanda elektrik-elektronik mühendisliği öğrencisiyim.");
   section("donate","💜 Destek Ol","Yeni oyun sistemleri ve projeler geliştirmeme destek olabilirsin.","☕ Buy Me a Coffee","https://buymeacoffee.com/KloverY");
   section("contact","📩 İletişim","Proje ve iş birliği için benimle iletişime geçebilirsin.","✉️ E-posta Gönder","mailto:melihcagridayi@gmail.com");
-  const heading=el("h2", {text:"📝 Geliştirme Günlüğü",className:"section-title"});heading.id="devlog";content.append(heading);
-  if (appData.devlog?.length) {
-    const list=el("div",{className:"devlog-list"});
-    [...appData.devlog].reverse().slice(0,4).forEach(entry=>list.append(el("article",{className:"devlog-entry"},[
-      el("time",{text:entry.date||""}),el("h2",{text:entry.title||"Güncelleme"}),el("p",{text:entry.text||""})
-    ])));content.append(list);
-  } else content.append(el("p",{text:"Henüz yayınlanmış güncelleme yok."}));
+  section("devlog","📝 Devlog","Geliştirme günlüğüm ve son güncellemelerim.","Devlog’u Aç","devlog.html");
+
 }
 function renderSchool() {
   setHeading("projects", "Projeler", "Okul çalışmalarım, mühendislik ve diğer projelerim.");clearContent();
@@ -290,14 +285,14 @@ function addGameReactions(){
 }
 function renderRoute() {
   const pathname=location.pathname.split("/").pop();
-  const page=pathname==="oyunlar.html"?"games":pathname==="projeler.html"?"school":"home";
+  const page=pathname==="oyunlar.html"?"games":pathname==="projeler.html"?"school":pathname==="devlog.html"?"devlog":"home";
   document.querySelectorAll("[data-page]").forEach(a=>{const active=a.dataset.page===page;a.classList.toggle("active",active);if(active)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});
   if(page==="games"){
     const slug=location.hash.startsWith("#project/")?location.hash.slice(9):null;
     if(slug)renderProjectDetail(slug);
     else renderProjects();
     addGameReactions();
-  }else if(page==="school")renderSchool();else renderHome();
+  }else if(page==="school")renderSchool();else if(page==="devlog")renderDevlog();else renderHome();
   mobileNav.classList.remove("open");menuToggle.setAttribute("aria-expanded","false");
 }
 async function loadData() {
