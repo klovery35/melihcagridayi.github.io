@@ -110,7 +110,7 @@ function renderProjects() {
     const top = el("div", { className: "project-top" }, [copy, projectIcon(project, "project-icon")]);
     const description = el("p", { className: "project-description", text: project.short_description || project.description || "" });
 
-    const detail = el("a", { className: "button", text: "Detayları Gör", href: `#project/${slugify(project.title)}` });
+    const detail = el("a", { className: "button", text: "Detayları Gör", href: `oyunlar.html#project/${slugify(project.title)}` });
     const open = externalButton(project.button || "Aç", project.url || "", true);
     const actions = el("div", { className: "card-actions" }, [detail, open]);
     grid.append(el("article", { className: "project-card" }, [top, description, actions]));
@@ -153,7 +153,7 @@ function renderProjectDetail(slug) {
 
   const actions = el("div", { className: "detail-actions" });
   if (project.url) actions.append(externalButton(project.button || "Sayfayı Aç", project.url, true));
-  actions.append(el("a", { className: "button", text: "← Projelere Geri Dön", href: "#projects" }));
+  actions.append(el("a", { className: "button", text: "← Projelere Geri Dön", href: "oyunlar.html" }));
   card.append(actions);
   content.append(card);
 }
@@ -226,52 +226,88 @@ function renderContact() {
   content.append(card);
 }
 
-function renderRoute() {
-  const rawHash = location.hash.replace(/^#/, "") || "projects";
-  const [route, slug] = rawHash.split("/");
-
-  switch (route) {
-    case "projects": renderProjects(); break;
-    case "project": renderProjectDetail(slug || ""); break;
-    case "devlog": renderDevlog(); break;
-    case "about": renderAbout(); break;
-    case "donate": renderDonate(); break;
-    case "contact": renderContact(); break;
-    default:
-      history.replaceState(null, "", "#projects");
-      renderProjects();
-  }
-
-  mobileNav.classList.remove("open");
-  menuToggle.setAttribute("aria-expanded", "false");
-  menuToggle.setAttribute("aria-label", "Menüyü aç");
-  window.scrollTo({ top: 0, behavior: "smooth" });
+function renderHome() {
+  setHeading("about", "Klovery Games'e Hoş Geldin", "Oyunlarım, okul projelerim ve geliştirme yolculuğum.");
+  clearContent();
+  const welcome = el("article", { className: "text-card home-hero" }, [
+    el("p", { className: "eyebrow", text: "BAĞIMSIZ GELİŞTİRİCİ PORTFÖYÜ" }),
+    el("h2", { text: "Fikirlerden oynanabilir deneyimlere." }),
+    el("p", { text: "Oyunlarımı keşfet, geliştirdiğim projelere göz at ve çalışmalarımı takip et." }),
+    el("div", { className: "card-actions" }, [
+      el("a", { className: "button primary", href: "oyunlar.html", text: "🎮 Oyunları Keşfet" }),
+      el("a", { className: "button", href: "projeler.html", text: "📁 Projeleri Gör" })
+    ])
+  ]);
+  content.append(welcome);
+  const section = (id, title, description, linkText, href) => {
+    const card = el("article", { className: "text-card home-section" }); card.id=id;
+    card.append(el("h2", {text:title}),el("p", {text:description}));
+    if (linkText) card.append(el("a", {className:"button",href,text:linkText}));
+    content.append(card);
+  };
+  section("about","👤 Hakkımda","Merhaba, ben Çağrı. Godot ile bağımsız PC oyunları ve interaktif deneyimler geliştiriyorum. Aynı zamanda elektrik-elektronik mühendisliği öğrencisiyim.");
+  section("donate","💜 Destek Ol","Yeni oyun sistemleri ve projeler geliştirmeme destek olabilirsin.","☕ Buy Me a Coffee","https://buymeacoffee.com/KloverY");
+  section("contact","📩 İletişim","Proje ve iş birliği için benimle iletişime geçebilirsin.","✉️ E-posta Gönder","mailto:melihcagridayi@gmail.com");
+  const heading=el("h2", {text:"📝 Geliştirme Günlüğü",className:"section-title"});heading.id="devlog";content.append(heading);
+  if (appData.devlog?.length) {
+    const list=el("div",{className:"devlog-list"});
+    [...appData.devlog].reverse().slice(0,4).forEach(entry=>list.append(el("article",{className:"devlog-entry"},[
+      el("time",{text:entry.date||""}),el("h2",{text:entry.title||"Güncelleme"}),el("p",{text:entry.text||""})
+    ])));content.append(list);
+  } else content.append(el("p",{text:"Henüz yayınlanmış güncelleme yok."}));
 }
-
-async function loadData() {
-  setHeading("projects", "Loading...", "Proje verileri yükleniyor.");
-  showStatus("Veriler yükleniyor...");
-  try {
-    const response = await fetch(DATA_URL, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    if (!data || typeof data !== "object") throw new Error("Geçersiz JSON");
-    appData = {
-      projects: Array.isArray(data.projects) ? data.projects : [],
-      devlog: Array.isArray(data.devlog) ? data.devlog : []
-    };
-  } catch (error) {
-    console.error("Veri yükleme hatası:", error);
-    loadError = error;
+function renderSchool() {
+  setHeading("projects", "Projeler", "Okul çalışmalarım, mühendislik ve diğer projelerim.");clearContent();
+  if (!Array.isArray(window.SCHOOL_PROJECTS) || !window.SCHOOL_PROJECTS.length) {
+    content.append(el("article",{className:"text-card"},[
+      el("h2",{text:"📁 Projelerim"}),
+      el("p",{text:"Bu bölüm hazırlanıyor. Yeni projeler yakında burada yer alacak."})
+    ]));return;
   }
+  const grid=el("div",{className:"projects-grid"});
+  window.SCHOOL_PROJECTS.forEach((p,i)=>{
+    const card=el("article",{className:"project-card"},[
+      el("h2",{text:p.title||"Proje"}),el("p",{className:"project-description",text:p.description||""})
+    ]);
+    if(p.image)card.prepend(el("img",{className:"school-image",src:p.image,alt:p.title||"Proje görseli"}));
+    if(p.url)card.append(el("a",{className:"button",href:p.url,text:"Projeyi İncele",target:"_blank",rel:"noopener noreferrer"}));
+    card.append(reactionArea("school-"+(p.id||slugify(p.title)||i)));
+    grid.append(card);
+  });content.append(grid);
+}
+function reactionArea(id) {
+  const wrapper=el("div",{className:"reaction-widget"});wrapper.dataset.reactionId=id;
+  wrapper.append(el("p",{className:"reaction-label",text:"Bu çalışmayı nasıl buldun?"}),el("div",{className:"reaction-buttons"}),el("small",{className:"reaction-message",text:"Tepkiler Firebase bağlandıktan sonra etkinleşir."}));
+  if(window.KloveryReactions)window.KloveryReactions.mount(wrapper);
+  return wrapper;
+}
+function addGameReactions(){
+  document.querySelectorAll(".project-card").forEach((card,i)=>{
+    const project=appData.projects[i];if(project)card.append(reactionArea("game-"+slugify(project.title)));
+  });
+  const detail=document.querySelector(".detail-card");
+  if(detail){const slug=location.hash.replace(/^#project\//,"");detail.append(reactionArea("game-"+slug));}
+}
+function renderRoute() {
+  const pathname=location.pathname.split("/").pop();
+  const page=pathname==="oyunlar.html"?"games":pathname==="projeler.html"?"school":"home";
+  document.querySelectorAll("[data-page]").forEach(a=>{const active=a.dataset.page===page;a.classList.toggle("active",active);if(active)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current");});
+  if(page==="games"){
+    const slug=location.hash.startsWith("#project/")?location.hash.slice(9):null;
+    if(slug)renderProjectDetail(slug);
+    else renderProjects();
+    addGameReactions();
+  }else if(page==="school")renderSchool();else renderHome();
+  mobileNav.classList.remove("open");menuToggle.setAttribute("aria-expanded","false");
+}
+async function loadData() {
+  showStatus("İçerik yükleniyor...");
+  try {const response=await fetch(DATA_URL,{cache:"no-store"});if(!response.ok)throw Error(`HTTP ${response.status}`);
+    const data=await response.json();appData={projects:Array.isArray(data.projects)?data.projects:[],devlog:Array.isArray(data.devlog)?data.devlog:[]};
+  }catch(error){console.error("Veri yükleme hatası:",error);loadError=error;}
   renderRoute();
 }
-
-menuToggle.addEventListener("click", () => {
-  const open = mobileNav.classList.toggle("open");
-  menuToggle.setAttribute("aria-expanded", String(open));
-  menuToggle.setAttribute("aria-label", open ? "Menüyü kapat" : "Menüyü aç");
-});
-
-window.addEventListener("hashchange", renderRoute);
+menuToggle.addEventListener("click",()=>{const open=mobileNav.classList.toggle("open");menuToggle.setAttribute("aria-expanded",String(open));});
+window.addEventListener("hashchange",renderRoute);
+window.addEventListener("klovery-reactions-ready",()=>document.querySelectorAll(".reaction-widget").forEach(node=>window.KloveryReactions.mount(node)));
 loadData();
