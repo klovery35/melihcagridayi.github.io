@@ -12,13 +12,13 @@ document.querySelector("#year").textContent = new Date().getFullYear();
 
 let appData = { projects: [], devlog: [] };
 let loadError = null;
+let isLoading = true;
 
 const routeInfo = {
-  projects: ["Projects", "Yayınlanan ve geliştirme aşamasındaki oyun projelerim."],
-  devlog: ["Devlog", "Projelerdeki son geliştirmeler ve ilerleme notları."],
-  about: ["About", "Geliştirici ve öğrenci olarak üzerinde çalıştığım alanlar."],
-  donate: ["Donate", "Bağımsız projelerime destek olmak istersen bağlantılar burada."],
-  contact: ["Contact", "Proje, iş birliği veya geri bildirim için bana ulaşabilirsin."]
+  projects: ["Oyunlar", "Yayınlanan ve geliştirme aşamasındaki oyun projelerim."],
+  devlog: ["Geliştirme Günlüğü", "Oyunlar ve teknik çalışmalar hakkındaki ilerleme notları."],
+  school: ["Projeler", "Mühendislik eğitimim ve uygulamalı çalışmalarım."],
+  home: ["Klovery Games", ""]
 };
 
 function el(tag, options = {}, children = []) {
@@ -40,28 +40,34 @@ function clearContent() {
 
 function setHeading(route, customTitle = null, customSubtitle = null) {
   const info = routeInfo[route] || routeInfo.projects;
-  pageTitle.textContent = customTitle || info[0];
-  pageSubtitle.textContent = customSubtitle || info[1];
+  pageTitle.textContent = customTitle ?? info[0];
+  const subtitle = customSubtitle ?? info[1];
+  pageSubtitle.textContent = subtitle;
+  pageSubtitle.hidden = !subtitle;
 }
 
-function setActive(route) {
-  document.querySelectorAll("[data-route]").forEach(link => {
-    const active = link.dataset.route === route;
-    link.classList.toggle("active", active);
-    if (active) link.setAttribute("aria-current", "page");
-    else link.removeAttribute("aria-current");
-  });
+
+function safeWebUrl(value) {
+  if (typeof value !== "string" || !value.trim()) return "";
+  try {
+    const parsed = new URL(value, location.href);
+    return ["http:", "https:"].includes(parsed.protocol) ? parsed.href : "";
+  } catch {
+    return "";
+  }
 }
 
 function externalButton(text, url, primary = false) {
+  // Only regular web addresses may become remote, clickable project links.
+  const safe = safeWebUrl(url);
   const link = el("a", {
     className: `button${primary ? " primary" : ""}`,
     text,
-    href: url || undefined,
-    target: url ? "_blank" : undefined,
-    rel: url ? "noopener noreferrer" : undefined
+    href: safe || undefined,
+    target: safe ? "_blank" : undefined,
+    rel: safe ? "noopener noreferrer" : undefined
   });
-  if (!url) link.setAttribute("aria-disabled", "true");
+  if (!safe) link.setAttribute("aria-disabled", "true");
   return link;
 }
 
@@ -93,11 +99,11 @@ function showStatus(message, isError = false) {
 
 function renderProjects() {
   setHeading("projects");
-  setActive("projects");
+
   clearContent();
 
   if (!appData.projects?.length) {
-    showStatus(loadError ? "Proje verileri şu anda yüklenemedi." : "Henüz proje verisi yok.", Boolean(loadError));
+    showStatus(loadError ? "Oyunlar şu anda yüklenemedi. Daha sonra yeniden deneyebilirsin." : isLoading ? "Oyunlar yükleniyor…" : "Henüz oyun eklenmedi.", Boolean(loadError));
     return;
   }
 
@@ -121,14 +127,14 @@ function renderProjects() {
 function renderProjectDetail(slug) {
   const project = appData.projects?.find(item => slugify(item.title) === slug);
   if (!project) {
-    setHeading("projects", "Project Not Found", "Aradığın proje bulunamadı.");
-    setActive("projects");
+    setHeading("projects", "Oyun Bulunamadı", "Aradığın proje bulunamadı.");
+
     showStatus("Bu proje bulunamadı veya veri kaynağından kaldırılmış olabilir.", true);
     return;
   }
 
-  setHeading("projects", project.title || "Project Detail", `${project.status || ""}${project.platform ? ` • ${project.platform}` : ""}`);
-  setActive("projects");
+  setHeading("projects", project.title || "Oyun Detayı", `${project.status || ""}${project.platform ? ` • ${project.platform}` : ""}`);
+
   clearContent();
 
   const info = el("div", {}, [
@@ -140,12 +146,14 @@ function renderProjectDetail(slug) {
   const card = el("article", { className: "detail-card" }, [hero]);
   card.append(el("p", { className: "detail-description", text: project.description || project.short_description || "" }));
 
-  if (project.screenshots?.length) {
-    card.append(el("h3", { className: "section-title", text: "Screenshots" }));
+  if (Array.isArray(project.screenshots) && project.screenshots.length) {
+    card.append(el("h3", { className: "section-title", text: "Ekran Görüntüleri" }));
     const shots = el("div", { className: "screenshot-grid" });
     project.screenshots.slice(0, 10).forEach((src, index) => {
-      const img = el("img", { src, alt: `${project.title} ekran görüntüsü ${index + 1}` });
-      const link = el("a", { href: src, target: "_blank", rel: "noopener noreferrer" }, [img]);
+      const safeSrc = safeWebUrl(src);
+      if (!safeSrc) return;
+      const img = el("img", { src: safeSrc, alt: `${project.title} ekran görüntüsü ${index + 1}` });
+      const link = el("a", { href: safeSrc, target: "_blank", rel: "noopener noreferrer" }, [img]);
       shots.append(link);
     });
     card.append(shots);
@@ -153,18 +161,18 @@ function renderProjectDetail(slug) {
 
   const actions = el("div", { className: "detail-actions" });
   if (project.url) actions.append(externalButton(project.button || "Sayfayı Aç", project.url, true));
-  actions.append(el("a", { className: "button", text: "← Projelere Geri Dön", href: "oyunlar.html" }));
+  actions.append(el("a", { className: "button", text: "← Oyunlara Geri Dön", href: "oyunlar.html" }));
   card.append(actions);
   content.append(card);
 }
 
 function renderDevlog() {
   setHeading("devlog");
-  setActive("devlog");
+
   clearContent();
 
   if (!appData.devlog?.length) {
-    showStatus(loadError ? "Devlog verileri şu anda yüklenemedi." : "Henüz devlog yok.", Boolean(loadError));
+    showStatus(loadError ? "Geliştirme günlüğü şu anda yüklenemedi." : isLoading ? "Geliştirme günlüğü yükleniyor…" : "Henüz geliştirme notu eklenmedi.", Boolean(loadError));
     return;
   }
 
@@ -181,84 +189,62 @@ function renderDevlog() {
   content.append(list);
 }
 
-function renderAbout() {
-  setHeading("about");
-  setActive("about");
-  clearContent();
-  const card = el("article", { className: "text-card" });
-  [
-    "Merhaba, ben Çağrı.",
-    "PC oyunları, gameplay sistemleri ve interaktif deneyimler geliştirmeyi hobi olarak yapan bağımsız bir oyun geliştiricisiyim.",
-    "Özellikle Godot ile mekanik tasarımı, oyun hissi ve atmosfer üzerine çalışıyorum.",
-    "Aynı zamanda İzmir Demokrasi Üniversitesi Elektrik-Elektronik Mühendisliği 4. sınıf öğrencisiyim.",
-    "Yazılım, oyun teknolojileri ve mühendislik alanlarında kendimi geliştirmeye devam ediyorum."
-  ].forEach(text => card.append(el("p", { text })));
-  content.append(card);
-}
-
-function renderDonate() {
-  setHeading("donate");
-  setActive("donate");
-  clearContent();
-  const card = el("article", { className: "text-card" });
-  card.append(
-    el("h2", { text: "Projelerime destek olmak ister misin?" }),
-    el("p", { text: "Klovery Games ve geliştirdiğim bağımsız PC oyunları hobi olarak ilerleyen projelerdir. Desteklerin yeni oyun sistemleri, assetler, görsel içerikler ve geliştirme süreci için motivasyon sağlar." })
-  );
-  const links = el("div", { className: "link-stack" }, [
-    externalButton("☕ Buy Me a Coffee ile Destek Ol", "https://buymeacoffee.com/KloverY", true)
-  ]);
-  card.append(links);
-  content.append(card);
-}
-
-function renderContact() {
-  setHeading("contact");
-  setActive("contact");
-  clearContent();
-  const card = el("article", { className: "text-card" });
-  card.append(el("p", { text: "E-posta: melihcagridayi@gmail.com" }));
-  card.append(el("div", { className: "link-stack" }, [
-    externalButton("✉️ E-posta Gönder", "mailto:melihcagridayi@gmail.com"),
-    externalButton("🎮 itch.io Profilim", "https://melihcagridayi.itch.io"),
-    externalButton("💻 GitHub Profilim", "https://github.com/klovery35")
-  ]));
-  content.append(card);
-}
-
 function renderHome() {
-  setHeading("about", "Klovery Games'e Hoş Geldin", "Oyunlarım, okul projelerim ve geliştirme yolculuğum.");
+  setHeading("home");
   clearContent();
-  const welcome = el("article", { className: "text-card home-hero" }, [
-    el("p", { className: "eyebrow", text: "BAĞIMSIZ GELİŞTİRİCİ PORTFÖYÜ" }),
-    el("h2", { text: "Fikirlerden oynanabilir deneyimlere." }),
-    el("p", { text: "Oyunlarımı keşfet, geliştirdiğim projelere göz at ve çalışmalarımı takip et." }),
-    el("div", { className: "card-actions" }, [
-      el("a", { className: "button primary", href: "oyunlar.html", text: "🎮 Oyunları Keşfet" }),
-      el("a", { className: "button", href: "projeler.html", text: "📁 Projeleri Gör" })
+
+  const aboutHeading = el("div", { className: "about-heading" }, [
+    el("div", {}, [
+      el("p", { className: "section-label", text: "HAKKIMDA" }),
+      el("h2", { text: "Melih Çağrı Dayı" })
+    ]),
+    el("span", { className: "education-chip", text: "4. sınıf öğrencisi" })
+  ]);
+
+  const about = el("article", { className: "text-card home-about" }, [
+    aboutHeading,
+    el("p", { className: "about-lead", text: "İzmir Demokrasi Üniversitesi Elektrik-Elektronik Mühendisliği 4. sınıf öğrencisiyim." }),
+    el("p", { text: "Eğitimim boyunca edindiğim analitik düşünme ve problem çözme yaklaşımını, mühendislik ve yazılım alanındaki çalışmalarımda kullanmaya odaklanıyorum. Elektronik sistemlerin çalışma prensiplerini anlamak, teorik bilgileri uygulamalı çalışmalarla pekiştirmek ve teknik becerilerimi geliştirmek benim için öncelikli." }),
+    el("p", { text: "Akademik ilgi alanlarımın yanında Klovery Games adıyla Godot kullanarak bağımsız PC oyunları ve etkileşimli deneyimler geliştiriyorum. Mühendislik bakış açımı hem teknik projelerime hem de oyun geliştirme sürecine taşımayı hedefliyorum." }),
+    el("div", { className: "about-tags" }, [
+      el("span", { text: "Elektrik-Elektronik Mühendisliği" }),
+      el("span", { text: "Uygulamalı projeler" }),
+      el("span", { text: "Godot & oyun geliştirme" })
     ])
   ]);
-  content.append(welcome);
-  const compactGrid = el("div", { className: "home-info-grid" });
-  content.append(compactGrid);
-  const section = (id, title, description, linkText, href) => {
-    const card = el("article", { className: "text-card home-section" }); card.id=id;
-    card.append(el("h2", {text:title}),el("p", {text:description}));
-    if (linkText) card.append(el("a", {className:"button",href,text:linkText}));
-    compactGrid.append(card);
-  };
-  section("about","👤 Hakkımda","Merhaba, ben Çağrı. Godot ile bağımsız PC oyunları ve interaktif deneyimler geliştiriyorum. Aynı zamanda elektrik-elektronik mühendisliği öğrencisiyim.");
-  section("donate","💜 Destek Ol","Yeni oyun sistemleri ve projeler geliştirmeme destek olabilirsin.","☕ Buy Me a Coffee","https://buymeacoffee.com/KloverY");
-  section("contact","📩 İletişim","Proje ve iş birliği için benimle iletişime geçebilirsin.","✉️ E-posta Gönder","mailto:melihcagridayi@gmail.com");
-  section("devlog","📝 Devlog","Geliştirme günlüğüm, sürüm notları ve oyunlarımdaki son yenilikler.","📝 Devlog’u Aç","devlog.html");
+  about.id = "hakkimda";
+  content.append(about);
 
+  const grid = el("div", { className: "home-overview-grid" });
+  const addCard = (icon, title, description, linkText, href, external = false) => {
+    const link = el("a", {
+      className: "overview-link",
+      href,
+      text: linkText,
+      target: external ? "_blank" : undefined,
+      rel: external ? "noopener noreferrer" : undefined
+    });
+    grid.append(el("article", { className: "text-card overview-card" }, [
+      el("span", { className: "overview-icon", text: icon }),
+      el("h2", { text: title }),
+      el("p", { text: description }),
+      link
+    ]));
+  };
+  addCard("🎮", "Oyunlar", "Godot ile geliştirdiğim bağımsız PC oyunlarını ve oyun detaylarını keşfet.", "Oyunları İncele ↗", "oyunlar.html");
+  addCard("📁", "Mühendislik Projeleri", "Eğitimim ve bireysel çalışmalarım kapsamında hazırladığım teknik projeler.", "Projelere Git ↗", "projeler.html");
+  addCard("📝", "Geliştirme Günlüğü", "Projelerdeki ilerlemeleri, güncellemeleri ve geliştirme notlarını takip et.", "Günlüğü Aç ↗", "devlog.html");
+  addCard("💜", "Destek Ol", "Bağımsız oyun çalışmalarımı desteklemek istersen destek sayfama göz atabilirsin.", "Destek Sayfası ↗", "https://buymeacoffee.com/KloverY", true);
+  content.append(grid);
 }
+
 function renderSchool() {
-  setHeading("projects", "Projeler", "Okul çalışmalarım, mühendislik ve diğer projelerim.");clearContent();
+  setHeading("school");
+  clearContent();
   if (!Array.isArray(window.SCHOOL_PROJECTS) || !window.SCHOOL_PROJECTS.length) {
     content.append(el("article",{className:"text-card"},[
-      el("h2",{text:"📁 Projelerim"}),
-      el("p",{text:"Bu bölüm hazırlanıyor. Yeni projeler yakında burada yer alacak."})
+      el("h2",{text:"Mühendislik Projeleri"}),
+      el("p",{text:"Elektrik-Elektronik Mühendisliği eğitimim ve bireysel çalışmalarım kapsamında hazırladığım projeleri burada paylaşacağım. Bu bölüm şu anda hazırlanıyor."})
     ]));return;
   }
   const grid=el("div",{className:"projects-grid"});
@@ -267,7 +253,8 @@ function renderSchool() {
       el("h2",{text:p.title||"Proje"}),el("p",{className:"project-description",text:p.description||""})
     ]);
     if(p.image)card.prepend(el("img",{className:"school-image",src:p.image,alt:p.title||"Proje görseli"}));
-    if(p.url)card.append(el("a",{className:"button",href:p.url,text:"Projeyi İncele",target:"_blank",rel:"noopener noreferrer"}));
+    const safeProjectUrl = safeWebUrl(p.url);
+    if(safeProjectUrl)card.append(el("a",{className:"button",href:safeProjectUrl,text:"Projeyi İncele",target:"_blank",rel:"noopener noreferrer"}));
     card.append(reactionArea("school-"+(p.id||slugify(p.title)||i)));
     grid.append(card);
   });content.append(grid);
@@ -298,14 +285,27 @@ function renderRoute() {
   mobileNav.classList.remove("open");menuToggle.setAttribute("aria-expanded","false");
 }
 async function loadData() {
-  showStatus("İçerik yükleniyor...");
-  try {const response=await fetch(DATA_URL,{cache:"no-store"});if(!response.ok)throw Error(`HTTP ${response.status}`);
-    const data=await response.json();appData={projects:Array.isArray(data.projects)?data.projects:[],devlog:Array.isArray(data.devlog)?data.devlog:[]};
-  }catch(error){console.error("Veri yükleme hatası:",error);loadError=error;}
-  renderRoute();
+  try {
+    const response = await fetch(DATA_URL, { cache: "no-store" });
+    if (!response.ok) throw Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    appData = {
+      projects: Array.isArray(data.projects) ? data.projects : [],
+      devlog: Array.isArray(data.devlog) ? data.devlog : []
+    };
+  } catch (error) {
+    console.error("Veri yükleme hatası:", error);
+    loadError = error;
+  } finally {
+    isLoading = false;
+  }
+  // An external data request must not delay or reset the homepage and mobile menu.
+  const pathname = location.pathname.split("/").pop();
+  if (pathname === "oyunlar.html" || pathname === "devlog.html") renderRoute();
 }
 menuToggle.addEventListener("click",()=>{const open=mobileNav.classList.toggle("open");menuToggle.setAttribute("aria-expanded",String(open));});
 window.addEventListener("hashchange",renderRoute);
 window.addEventListener("klovery-reactions-ready",()=>document.querySelectorAll(".reaction-widget").forEach(node=>window.KloveryReactions.mount(node)));
 window.addEventListener("klovery-auth-ready",()=>document.querySelectorAll(".reaction-widget").forEach(node=>window.KloveryReactions?.mount(node)));
+renderRoute();
 loadData();

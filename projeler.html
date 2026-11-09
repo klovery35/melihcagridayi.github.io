@@ -4,24 +4,24 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#12091f">
-  <meta name="description" content="Klovery Games — Melih Çağrı Dayı'nın bağımsız oyun projeleri, geliştirme günlükleri ve iletişim bilgileri.">
+  <meta name="description" content="Melih Çağrı Dayı — İzmir Demokrasi Üniversitesi Elektrik-Elektronik Mühendisliği öğrencisi, teknik projeler ve Klovery Games oyunları.">
   <meta property="og:title" content="Klovery Games | Melih Çağrı Dayı">
-  <meta property="og:description" content="Bağımsız oyun projeleri, devlog ve geliştirici portföyü.">
+  <meta property="og:description" content="Elektrik-Elektronik Mühendisliği çalışmaları, oyun projeleri ve geliştirme notları.">
   <meta property="og:type" content="website">
-  <link rel="icon" href="assets/klovery_icon.png">
+  <link rel="icon" href="assets/klovery_icon.webp">
   <link rel="preconnect" href="https://raw.githubusercontent.com">
   <title>Projeler | Melih Çağrı Dayı</title>
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
   <script src="firebase-config.js"></script>
-  <script type="module" src="reactions.js?v=3"></script>
+  <script type="module" src="reactions.js?v=4"></script>
   <script src="school-projects.js" defer></script>
-  <script src="app.js?v=3" defer></script>
+  <script src="app.js?v=4" defer></script>
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Ana menü">
       <a class="brand" href="index.html" aria-label="Klovery Games ana sayfa">
-        <img src="assets/klovery_icon.png" alt="" class="brand-icon">
+        <img src="assets/klovery_icon.webp" alt="" class="brand-icon">
         <span>
           <strong>Klovery Games</strong>
           <small>Melih Çağrı Dayı</small>
@@ -35,16 +35,30 @@
         <a href="devlog.html" data-page="devlog"><span>📝</span> Devlog</a>
       </nav>
 
+      <section class="sidebar-contact" aria-label="İletişim bağlantıları">
+        <h2>İletişim</h2>
+        <p>Projeler ve iş birlikleri için</p>
+        <a class="contact-link" href="mailto:melihcagridayi@gmail.com">
+          <span class="contact-icon" aria-hidden="true">✉</span><span class="contact-label">E-posta<small>Mesaj gönder</small></span><span class="contact-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a class="contact-link" href="https://melihcagridayi.itch.io" target="_blank" rel="noopener noreferrer">
+          <span class="contact-icon" aria-hidden="true">🎮</span><span class="contact-label">itch.io<small>Oyun sayfam</small></span><span class="contact-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a class="contact-link" href="https://github.com/klovery35" target="_blank" rel="noopener noreferrer">
+          <span class="contact-icon" aria-hidden="true">⌘</span><span class="contact-label">GitHub<small>Kod ve projelerim</small></span><span class="contact-arrow" aria-hidden="true">↗</span>
+        </a>
+      </section>
+
       <div class="sidebar-footer">
-        <span>Web Edition</span>
-        <small>Original app made with Godot</small>
+        <span>Melih Çağrı Dayı</span>
+        <small>Elektrik-Elektronik Mühendisliği</small>
       </div>
     </aside>
 
     <main class="main-content">
       <header class="mobile-header">
         <a class="mobile-brand" href="index.html">
-          <img src="assets/klovery_icon.png" alt="">
+          <img src="assets/klovery_icon.webp" alt="">
           <span>Klovery Games</span>
         </a>
         <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Menüyü aç" aria-expanded="false">☰</button>
@@ -55,20 +69,33 @@
         <a href="oyunlar.html" data-page="games"><span>🎮</span> Oyunlar</a>
         <a href="projeler.html" data-page="school"><span>📁</span> Projeler</a>
         <a href="devlog.html" data-page="devlog"><span>📝</span> Devlog</a>
+        <section class="sidebar-contact" aria-label="İletişim bağlantıları">
+        <h2>İletişim</h2>
+        <p>Projeler ve iş birlikleri için</p>
+        <a class="contact-link" href="mailto:melihcagridayi@gmail.com">
+          <span class="contact-icon" aria-hidden="true">✉</span><span class="contact-label">E-posta<small>Mesaj gönder</small></span><span class="contact-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a class="contact-link" href="https://melihcagridayi.itch.io" target="_blank" rel="noopener noreferrer">
+          <span class="contact-icon" aria-hidden="true">🎮</span><span class="contact-label">itch.io<small>Oyun sayfam</small></span><span class="contact-arrow" aria-hidden="true">↗</span>
+        </a>
+        <a class="contact-link" href="https://github.com/klovery35" target="_blank" rel="noopener noreferrer">
+          <span class="contact-icon" aria-hidden="true">⌘</span><span class="contact-label">GitHub<small>Kod ve projelerim</small></span><span class="contact-arrow" aria-hidden="true">↗</span>
+        </a>
+      </section>
       </nav>
 
       <section class="content-wrap" aria-live="polite">
         <div class="page-heading">
           <p class="eyebrow">KLOVERY GAMES</p>
           <h1 id="page-title">Klovery Games</h1>
-          <p id="page-subtitle" class="page-subtitle">Bağımsız oyunlar ve geliştirme notları.</p>
+          <p id="page-subtitle" class="page-subtitle" hidden></p>
         </div>
         <div id="content" class="content-panel"></div>
       </section>
 
       <footer class="site-footer">
         <span>© <span id="year"></span> Klovery Games</span>
-        <a href="https://github.com/klovery35" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <span>Melih Çağrı Dayı</span>
       </footer>
     </main>
   </div>
