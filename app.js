@@ -10,7 +10,7 @@ const menuToggle = document.querySelector("#menu-toggle");
 
 document.querySelector("#year").textContent = new Date().getFullYear();
 
-let appData = { projects: [], devlog: [] };
+let appData = { projects: [], devlog: [], school_projects: [] };
 let loadError = null;
 let isLoading = true;
 
@@ -238,27 +238,94 @@ function renderHome() {
   content.append(grid);
 }
 
-function renderSchool() {
-  setHeading("school");
-  clearContent();
-  if (!Array.isArray(window.SCHOOL_PROJECTS) || !window.SCHOOL_PROJECTS.length) {
-    content.append(el("article",{className:"text-card"},[
-      el("h2",{text:"Mühendislik Projeleri"}),
-      el("p",{text:"Elektrik-Elektronik Mühendisliği eğitimim ve bireysel çalışmalarım kapsamında hazırladığım projeleri burada paylaşacağım. Bu bölüm şu anda hazırlanıyor."})
-    ]));return;
-  }
-  const grid=el("div",{className:"projects-grid"});
-  window.SCHOOL_PROJECTS.forEach((p,i)=>{
-    const card=el("article",{className:"project-card"},[
-      el("h2",{text:p.title||"Proje"}),el("p",{className:"project-description",text:p.description||""})
-    ]);
-    if(p.image)card.prepend(el("img",{className:"school-image",src:p.image,alt:p.title||"Proje görseli"}));
-    const safeProjectUrl = safeWebUrl(p.url);
-    if(safeProjectUrl)card.append(el("a",{className:"button",href:safeProjectUrl,text:"Projeyi İncele",target:"_blank",rel:"noopener noreferrer"}));
-    card.append(reactionArea("school-"+(p.id||slugify(p.title)||i)));
-    grid.append(card);
-  });content.append(grid);
+function schoolVisual(p, large = false) {
+  // Decorative symbol is intentionally not a fake project photograph.
+  const art = el("div", { className: `school-visual${large ? " school-visual-large" : ""}` });
+  art.setAttribute("aria-hidden", "true");
+  art.dataset.kind = p.category === "RF ve Anten" ? "rf" : "analog";
+  art.append(el("span", { text: p.symbol || "⚙️" }));
+  return art;
 }
+
+function renderSchool() {
+  setHeading("school", "Mühendislik Projeleri", "Elektrik-Elektronik Mühendisliği kapsamında gerçekleştirdiğim çalışmalar.");
+  clearContent();
+  const projects = appData.school_projects;
+  if (!projects?.length) {
+    showStatus(loadError ? "Mühendislik projeleri yüklenemedi. Lütfen daha sonra tekrar dene."
+      : isLoading ? "Mühendislik projeleri yükleniyor…"
+      : "Henüz mühendislik projesi eklenmedi.", Boolean(loadError));
+    return;
+  }
+
+  const intro = el("div", { className: "school-intro" }, [
+    el("span", { className: "school-intro-label", text: "UYGULAMALI ÇALIŞMALAR" }),
+    el("p", { text: "Analog elektronik ve elektromanyetik alanlar üzerine iki proje. Her kartın detay sayfasında çalışma prensibi ve teknik odak başlıkları yer alıyor." })
+  ]);
+  content.append(intro);
+
+  const grid = el("div", { className: "projects-grid school-grid" });
+  projects.forEach(p => {
+    const title = el("h2", { text: p.title || "Mühendislik Projesi" });
+    const badge = el("span", { className: "school-category", text: p.category || "Elektrik-Elektronik" });
+    const card = el("article", { className: "project-card school-project-card" }, [
+      schoolVisual(p),
+      badge,
+      title,
+      el("p", { className: "project-description", text: p.short_description || p.description || "" })
+    ]);
+    const action = el("a", { className: "button primary school-open", text: "Proje Detaylarını Aç →", href: `projeler.html#project/${slugify(p.id || p.title)}` });
+    card.append(el("div", { className: "school-card-actions" }, [action]));
+    card.append(reactionArea("school-" + (p.id || slugify(p.title))));
+    grid.append(card);
+  });
+  content.append(grid);
+}
+
+function renderSchoolDetail(slug) {
+  const p = appData.school_projects?.find(item => slugify(item.id || item.title) === slug);
+  if (!p) {
+    setHeading("school", "Proje Bulunamadı", "Aradığın mühendislik projesi bulunamadı.");
+    showStatus(loadError ? "Proje verileri yüklenemedi." : isLoading ? "Proje yükleniyor…" : "Proje bulunamadı.", Boolean(loadError));
+    return;
+  }
+  setHeading("school", p.title || "Mühendislik Projesi", p.category || "Elektrik-Elektronik Mühendisliği");
+  clearContent();
+  const hero = el("div", { className: "school-detail-hero" }, [
+    el("div", { className: "school-detail-head" }, [
+      el("span", { className: "school-category", text: p.category || "Elektrik-Elektronik" }),
+      el("h2", { text: p.title || "Mühendislik Projesi" }),
+      el("p", { className: "school-detail-summary", text: p.short_description || "" })
+    ]),
+    schoolVisual(p, true)
+  ]);
+  const card = el("article", { className: "detail-card school-detail" }, [hero]);
+  if (p.description) card.append(el("p", { className: "detail-description", text: p.description }));
+  if (Array.isArray(p.sections)) {
+    const sectionGrid = el("div", { className: "school-detail-sections" });
+    p.sections.forEach(section => {
+      sectionGrid.append(el("section", { className: "school-detail-section" }, [
+        el("h3", { text: section.heading || "Proje hakkında" }),
+        el("p", { text: section.text || "" })
+      ]));
+    });
+    card.append(sectionGrid);
+  }
+  if (Array.isArray(p.topics) && p.topics.length) {
+    card.append(el("h3", { className: "section-title", text: "İlgili Teknik Konular" }));
+    const topics = el("div", { className: "school-topics" });
+    p.topics.forEach(topic => topics.append(el("span", { text: topic })));
+    card.append(topics);
+  }
+  const safeProjectUrl = safeWebUrl(p.url);
+  const buttons = el("div", { className: "detail-actions" });
+  if (safeProjectUrl) buttons.append(externalButton("Proje Dosyalarını Aç", safeProjectUrl, true));
+  buttons.append(el("a", { className: "button", text: "← Tüm Projelere Dön", href: "projeler.html" }));
+  card.append(buttons);
+  card.append(reactionArea("school-" + (p.id || slugify(p.title))));
+  content.append(card);
+}
+
 function reactionArea(id) {
   const wrapper=el("div",{className:"reaction-widget"});wrapper.dataset.reactionId=id;
   wrapper.append(el("p",{className:"reaction-label",text:"Bu çalışmayı nasıl buldun?"}),el("div",{className:"reaction-buttons"}),el("small",{className:"reaction-message",text:"Tepkiler Firebase bağlandıktan sonra etkinleşir."}));
@@ -280,7 +347,11 @@ function renderRoute() {
     if(slug)renderProjectDetail(slug);
     else renderProjects();
     addGameReactions();
-  }else if(page==="school")renderSchool();else if(page==="devlog")renderDevlog();else renderHome();
+  }else if(page==="school"){
+    const slug = location.hash.startsWith("#project/") ? location.hash.slice(9) : null;
+    if (slug) renderSchoolDetail(slug);
+    else renderSchool();
+  }else if(page==="devlog")renderDevlog();else renderHome();
   document.querySelectorAll(".reaction-widget").forEach(node=>window.KloveryReactions?.mount(node));
   mobileNav.classList.remove("open");menuToggle.setAttribute("aria-expanded","false");
 }
@@ -291,7 +362,8 @@ async function loadData() {
     const data = await response.json();
     appData = {
       projects: Array.isArray(data.projects) ? data.projects : [],
-      devlog: Array.isArray(data.devlog) ? data.devlog : []
+      devlog: Array.isArray(data.devlog) ? data.devlog : [],
+      school_projects: Array.isArray(data.school_projects) ? data.school_projects : []
     };
   } catch (error) {
     console.error("Veri yükleme hatası:", error);
@@ -301,7 +373,7 @@ async function loadData() {
   }
   // An external data request must not delay or reset the homepage and mobile menu.
   const pathname = location.pathname.split("/").pop();
-  if (pathname === "oyunlar.html" || pathname === "devlog.html") renderRoute();
+  if (["oyunlar.html", "devlog.html", "projeler.html"].includes(pathname)) renderRoute();
 }
 menuToggle.addEventListener("click",()=>{const open=mobileNav.classList.toggle("open");menuToggle.setAttribute("aria-expanded",String(open));});
 window.addEventListener("hashchange",renderRoute);

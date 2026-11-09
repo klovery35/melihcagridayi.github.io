@@ -372,3 +372,36 @@ h1 { color: var(--text); font-size: clamp(2.15rem, 4.6vw, 3.2rem); }
 @media (prefers-reduced-motion: reduce) {
   .contact-link, .overview-card { transition: none; }
 }
+
+/* Mühendislik projeleri: GitHub'daki devlog.json -> school_projects */
+.school-intro { display:flex; flex-direction:column; gap:7px; padding:18px 22px; margin-bottom:20px; background:rgba(56,189,248,.045); border:1px solid rgba(192,132,252,.2); border-radius:16px; }
+.school-intro-label { color:#cba5ff; font-size:.72rem; letter-spacing:.15em; font-weight:800; }
+.school-intro p { color:var(--muted); line-height:1.7; margin:0; font-size:.92rem; }
+.school-project-card { min-height:420px; padding:23px; }
+.school-project-card h2 { font-size:1.32rem; line-height:1.4; margin:12px 0 0; }
+.school-visual { height:138px; border-radius:16px; display:grid; place-items:center; overflow:hidden; position:relative; border:1px solid rgba(192,132,252,.16); background:radial-gradient(circle at 72% 28%,rgba(168,85,247,.42),transparent 45%),linear-gradient(135deg,#2a1645,#151025); }
+.school-visual::before,.school-visual::after { content:""; position:absolute; border:1px solid rgba(192,132,252,.25); width:220px; height:220px; border-radius:50%; }
+.school-visual::after { width:145px; height:145px; border-color:rgba(56,189,248,.21); }
+.school-visual[data-kind="rf"] { background:radial-gradient(circle at 70% 35%,rgba(56,189,248,.3),transparent 55%),linear-gradient(125deg,#162c44,#1d102f); }
+.school-visual span { position:relative; z-index:1; font-size:3.2rem; filter:drop-shadow(0 6px 22px rgba(0,0,0,.3)); }
+.school-category { display:inline-flex; align-self:flex-start; border:1px solid rgba(192,132,252,.32); border-radius:100px; padding:6px 11px; font-size:.74rem; letter-spacing:.025em; color:#e8d3ff; background:rgba(168,85,247,.12); font-weight:700; margin-top:16px; }
+.school-project-card .project-description { color:var(--muted); margin-top:13px !important; font-size:.94rem; flex:1; }
+.school-card-actions { margin-top:22px; }
+.school-open { width:100%; }
+.school-project-card .reaction-widget { margin-top:20px; }
+.school-detail { max-width:1000px; }
+.school-detail-hero { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(190px,1fr); gap:22px; align-items:stretch; }
+.school-detail-head { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; }
+.school-detail-head .school-category { margin:0 0 16px; }
+.school-detail-head h2 { margin:0 0 14px; font-size:clamp(1.5rem,3vw,2.1rem); }
+.school-detail-summary { margin:0; color:var(--muted); line-height:1.7; }
+.school-visual-large { height:auto; min-height:210px; }
+.school-visual-large span { font-size:4.8rem; }
+.school-detail .detail-description { margin:25px 0; line-height:1.85; color:#f1e7fd; }
+.school-detail-sections { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.school-detail-section { padding:18px 20px; border-radius:13px; background:rgba(168,85,247,.075); border:1px solid rgba(192,132,252,.13); }
+.school-detail-section h3 { margin:0 0 9px; color:#e7c7ff; font-size:1rem; }
+.school-detail-section p { margin:0; color:var(--muted); font-size:.91rem; line-height:1.7; }
+.school-topics { display:flex; flex-wrap:wrap; gap:8px; }
+.school-topics span { padding:7px 11px; border-radius:9px; background:rgba(56,189,248,.075); border:1px solid rgba(56,189,248,.2); color:#d5edff; font-size:.82rem; }
+@media (max-width:680px) { .school-detail-hero,.school-detail-sections { grid-template-columns:1fr; } .school-visual-large { min-height:160px; } .school-detail .detail-description { margin:20px 0; } }
