@@ -219,7 +219,7 @@ function renderContact() {
   const card = el("article", { className: "text-card" });
   card.append(el("p", { text: "E-posta: melihcagridayi@gmail.com" }));
   card.append(el("div", { className: "link-stack" }, [
-    externalButton("✉️ E-posta Gönder", "https://mail.google.com/mail/?view=cm&fs=1&to=melihcagridayi%40gmail.com"),
+    externalButton("✉️ E-posta Gönder", "mailto:melihcagridayi@gmail.com"),
     externalButton("🎮 itch.io Profilim", "https://melihcagridayi.itch.io"),
     externalButton("💻 GitHub Profilim", "https://github.com/klovery35")
   ]));
@@ -249,7 +249,7 @@ function renderHome() {
   };
   section("about","👤 Hakkımda","Merhaba, ben Çağrı. Godot ile bağımsız PC oyunları ve interaktif deneyimler geliştiriyorum. Aynı zamanda elektrik-elektronik mühendisliği öğrencisiyim.");
   section("donate","💜 Destek Ol","Yeni oyun sistemleri ve projeler geliştirmeme destek olabilirsin.","☕ Buy Me a Coffee","https://buymeacoffee.com/KloverY");
-  section("contact","📩 İletişim","Proje ve iş birliği için benimle iletişime geçebilirsin.","✉️ E-posta Gönder","https://mail.google.com/mail/?view=cm&fs=1&to=melihcagridayi%40gmail.com");
+  section("contact","📩 İletişim","Proje ve iş birliği için benimle iletişime geçebilirsin.","✉️ E-posta Gönder","mailto:melihcagridayi@gmail.com");
   section("devlog","📝 Devlog","Geliştirme günlüğüm, sürüm notları ve oyunlarımdaki son yenilikler.","📝 Devlog’u Aç","devlog.html");
 
 }
@@ -275,7 +275,6 @@ function renderSchool() {
 function reactionArea(id) {
   const wrapper=el("div",{className:"reaction-widget"});wrapper.dataset.reactionId=id;
   wrapper.append(el("p",{className:"reaction-label",text:"Bu çalışmayı nasıl buldun?"}),el("div",{className:"reaction-buttons"}),el("small",{className:"reaction-message",text:"Tepkiler Firebase bağlandıktan sonra etkinleşir."}));
-  if(window.KloveryReactions)window.KloveryReactions.mount(wrapper);
   return wrapper;
 }
 function addGameReactions(){
@@ -295,6 +294,7 @@ function renderRoute() {
     else renderProjects();
     addGameReactions();
   }else if(page==="school")renderSchool();else if(page==="devlog")renderDevlog();else renderHome();
+  document.querySelectorAll(".reaction-widget").forEach(node=>window.KloveryReactions?.mount(node));
   mobileNav.classList.remove("open");menuToggle.setAttribute("aria-expanded","false");
 }
 async function loadData() {
@@ -307,4 +307,5 @@ async function loadData() {
 menuToggle.addEventListener("click",()=>{const open=mobileNav.classList.toggle("open");menuToggle.setAttribute("aria-expanded",String(open));});
 window.addEventListener("hashchange",renderRoute);
 window.addEventListener("klovery-reactions-ready",()=>document.querySelectorAll(".reaction-widget").forEach(node=>window.KloveryReactions.mount(node)));
+window.addEventListener("klovery-auth-ready",()=>document.querySelectorAll(".reaction-widget").forEach(node=>window.KloveryReactions?.mount(node)));
 loadData();

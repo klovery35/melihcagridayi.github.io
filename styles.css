@@ -351,3 +351,9 @@ body:has(.home-info-grid) .site-footer { padding-top:8px; padding-bottom:10px; }
 .home-info-grid .home-section .button { align-self:flex-start; margin-top:auto; }
 .home-info-grid .home-section p { margin-bottom:12px; }
 @media (max-width:680px) { .home-info-grid { grid-auto-rows:auto; } .home-info-grid .home-section { min-height:135px; } }
+
+/* Ana sayfa kartlarının hizası: Devlog için eski ekstra boşluğu kaldır. */
+.home-info-grid #devlog { margin: 0; }
+.home-info-grid { align-items: stretch; grid-auto-rows: 1fr; }
+.home-info-grid .home-section { min-height: 150px; height: 100%; }
+@media(max-width:680px) { .home-info-grid { grid-auto-rows: auto; } }

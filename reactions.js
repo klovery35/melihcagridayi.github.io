@@ -2,45 +2,72 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/fireba
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import { getFirestore, collection, doc, onSnapshot, setDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
-const EMOJIS=['❤️','🔥','👏','🤩'];
-const config=window.KLOVERY_FIREBASE_CONFIG;
-let db=null, auth=null, currentUser=null, initialized=false;
-const subscriptions=new WeakMap();
-if(config?.apiKey && config?.projectId){
-  try {
-    const app=initializeApp(config); db=getFirestore(app);auth=getAuth(app);
-    onAuthStateChanged(auth,user=>{currentUser=user;document.querySelectorAll('.reaction-widget').forEach(mount);});
-    signInAnonymously(auth).catch(err=>console.error('Anonim giriş:',err));
-    initialized=true;
-  } catch(err){console.error('Firebase başlatılamadı:',err);}
+const EMOJIS = ['❤️','🔥','👏','🤩'];
+let db, auth, user = null, initError = null;
+const mounted = new WeakMap();
+
+function message(root, text) {
+  const target = root.querySelector('.reaction-message');
+  if (target) target.textContent = text;
 }
-function mount(root){
-  if(subscriptions.has(root))return;
-  const id=root.dataset.reactionId;
-  if(!id)return;
-  const buttons=root.querySelector('.reaction-buttons');
-  const message=root.querySelector('.reaction-message');
-  buttons.replaceChildren();
-  const refs=[];
-  for(const emoji of EMOJIS){
-    const button=document.createElement('button');button.type='button';button.className='reaction-button';button.textContent=emoji+' 0';button.setAttribute('aria-label',emoji+' tepkisi');button.disabled=!initialized||!currentUser;
-    button.addEventListener('click',async()=>{
-      if(!currentUser)return;
-      buttons.querySelectorAll('button').forEach(b=>b.disabled=true);
-      try{await setDoc(doc(db,'reactions',id,'votes',currentUser.uid),{emoji});message.textContent='Tepkin kaydedildi. İstersen değiştirebilirsin.';}
-      catch(err){console.error(err);message.textContent='Tepki kaydedilemedi. Firebase ayarlarını kontrol et.';}
-      finally{buttons.querySelectorAll('button').forEach(b=>b.disabled=false);}
-    });buttons.append(button);refs.push(button);
-  }
-  if(!initialized){message.textContent='Emoji tepkileri Firebase kurulunca aktif olacak.';return;}
-  if(!currentUser){message.textContent='Tepkiler hazırlanıyor...';return;}
-  message.textContent='Her çalışma için bir emoji seçebilirsin.';
-  const unsubscribe=onSnapshot(collection(db,'reactions',id,'votes'),snapshot=>{
-    const counts=Object.fromEntries(EMOJIS.map(e=>[e,0]));let selected=null;
-    snapshot.forEach(d=>{const emoji=d.data().emoji;if(emoji in counts)counts[emoji]++;if(d.id===currentUser.uid)selected=emoji;});
-    EMOJIS.forEach((emoji,i)=>{refs[i].textContent=`${emoji} ${counts[emoji]}`;refs[i].setAttribute('aria-pressed',String(selected===emoji));refs[i].disabled=false;});
-  },err=>{console.error(err);message.textContent='Tepkiler okunamadı. Firestore kurallarını kontrol et.';});
-  subscriptions.set(root,unsubscribe);
+function mount(root) {
+  if (mounted.has(root)) return;
+  const id = root.dataset.reactionId;
+  const holder = root.querySelector('.reaction-buttons');
+  if (!id || !holder) return;
+  if (initError) { message(root, 'Firebase bağlantısı kurulamadı. Konsolu kontrol et.'); return; }
+  if (!db || !user) { message(root, 'Tepkiler yükleniyor...'); return; }
+  const buttons = EMOJIS.map(emoji => {
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'reaction-button';
+    btn.textContent = emoji + ' 0';
+    btn.setAttribute('aria-label', emoji + ' tepkisi');
+    btn.addEventListener('click', async () => {
+      buttons.forEach(b => b.disabled = true);
+      try {
+        await setDoc(doc(db, 'reactions', id, 'votes', user.uid), {emoji});
+        message(root, 'Tepkin kaydedildi. Başka bir emoji seçerek değiştirebilirsin.');
+      } catch (err) {
+        console.error('Tepki kaydı:', err);
+        message(root, 'Kaydedilemedi: ' + (err.code || 'Bağlantı hatası'));
+      } finally { buttons.forEach(b => b.disabled = false); }
+    });
+    holder.append(btn);
+    return btn;
+  });
+  mounted.set(root, true);
+  message(root, 'Her oyun veya proje için bir emoji seçebilirsin.');
+  onSnapshot(collection(db, 'reactions', id, 'votes'), snapshot => {
+    const counts = Object.fromEntries(EMOJIS.map(e => [e,0]));
+    let selected = null;
+    snapshot.forEach(vote => {
+      const emoji = vote.data().emoji;
+      if (Object.prototype.hasOwnProperty.call(counts, emoji)) counts[emoji]++;
+      if (vote.id === user.uid) selected = emoji;
+    });
+    EMOJIS.forEach((emoji,i) => {
+      buttons[i].textContent = `${emoji} ${counts[emoji]}`;
+      buttons[i].setAttribute('aria-pressed', String(emoji === selected));
+    });
+  }, err => {
+    console.error('Tepki okuma:', err);
+    message(root, 'Tepkiler okunamadı: ' + (err.code || 'Bağlantı hatası'));
+  });
 }
-window.KloveryReactions={mount};
+function mountAll() { document.querySelectorAll('.reaction-widget').forEach(mount); }
+window.KloveryReactions = { mount };
 window.dispatchEvent(new Event('klovery-reactions-ready'));
+try {
+  const config = window.KLOVERY_FIREBASE_CONFIG;
+  if (!config?.apiKey || !config?.projectId) throw Error('Firebase yapılandırması bulunamadı');
+  const app = initializeApp(config);
+  db = getFirestore(app);
+  auth = getAuth(app);
+  onAuthStateChanged(auth, async account => {
+    if (account) { user = account; mountAll(); window.dispatchEvent(new Event('klovery-auth-ready')); }
+    else {
+      try { await signInAnonymously(auth); }
+      catch (err) { console.error('Anonim giriş:',err); initError = err; mountAll(); }
+    }
+  }, err => { initError = err; console.error('Auth:',err); mountAll(); });
+} catch (err) { initError = err; console.error('Firebase başlatma:',err); mountAll(); }
