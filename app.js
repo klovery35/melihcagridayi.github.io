@@ -239,12 +239,54 @@ function renderHome() {
 }
 
 function schoolVisual(p, large = false) {
-  // Decorative symbol is intentionally not a fake project photograph.
   const art = el("div", { className: `school-visual${large ? " school-visual-large" : ""}` });
-  art.setAttribute("aria-hidden", "true");
   art.dataset.kind = p.category === "RF ve Anten" ? "rf" : "analog";
-  art.append(el("span", { text: p.symbol || "⚙️" }));
+
+  // devlog.json > school_projects > image: optional photograph/schematic URL.
+  const imageUrl = safeWebUrl(p.image);
+  const symbol = el("span", { text: p.symbol || "⚙️" });
+  art.append(symbol);
+  art.setAttribute("aria-hidden", "true");
+
+  if (imageUrl) {
+    const img = el("img", {
+      className: "school-visual-image",
+      src: imageUrl,
+      alt: `${p.title || "Mühendislik projesi"} görseli`
+    });
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.addEventListener("load", () => {
+      art.classList.add("has-image");
+      art.removeAttribute("aria-hidden");
+    }, { once: true });
+    img.addEventListener("error", () => img.remove(), { once: true });
+    art.append(img);
+  }
   return art;
+}
+
+function schoolImageSection(p) {
+  const src = safeWebUrl(p.image);
+  if (!src) return null;
+
+  const section = el("section", { className: "school-image-section" });
+  section.append(el("h3", { className: "section-title", text: p.image_heading || "Proje Görseli" }));
+
+  const image = el("img", {
+    className: "school-project-image",
+    src,
+    alt: p.image_alt || `${p.title || "Mühendislik projesi"} görseli`
+  });
+  image.loading = "lazy";
+  image.decoding = "async";
+  const link = el("a", { className: "school-image-link", href: src, target: "_blank", rel: "noopener noreferrer" }, [image]);
+  const figure = el("figure", { className: "school-image-figure" }, [link]);
+  figure.append(el("figcaption", { text: p.image_caption || "Tam boyutta görüntülemek için görsele tıkla." }));
+  section.append(figure);
+  // Do not show a broken image if the user has not uploaded the file yet.
+  image.addEventListener("error", () => section.remove(), { once: true });
+  return section;
 }
 
 function renderSchool() {
@@ -260,7 +302,7 @@ function renderSchool() {
 
   const intro = el("div", { className: "school-intro" }, [
     el("span", { className: "school-intro-label", text: "UYGULAMALI ÇALIŞMALAR" }),
-    el("p", { text: "Analog elektronik ve elektromanyetik alanlar üzerine iki proje. Her kartın detay sayfasında çalışma prensibi ve teknik odak başlıkları yer alıyor." })
+    el("p", { text: `Analog elektronik ve elektromanyetik alanlar üzerine ${projects.length} proje. Her kartın detay sayfasında çalışma prensibi ve teknik odak başlıkları yer alıyor.` })
   ]);
   content.append(intro);
 
@@ -301,6 +343,8 @@ function renderSchoolDetail(slug) {
   ]);
   const card = el("article", { className: "detail-card school-detail" }, [hero]);
   if (p.description) card.append(el("p", { className: "detail-description", text: p.description }));
+  const imageSection = schoolImageSection(p);
+  if (imageSection) card.append(imageSection);
   if (Array.isArray(p.sections)) {
     const sectionGrid = el("div", { className: "school-detail-sections" });
     p.sections.forEach(section => {
